@@ -1,5 +1,6 @@
 #Método gráfico
 from tkinter import *
+from tkinter import messagebox
 from matplotlib import pyplot as plt
 import numpy as np
 
@@ -75,9 +76,11 @@ class VentanaResolver(Frame):
         def resolver():
             coeficientesX = [] #Lista para valores X
             coeficientesY = [] #Lista para valores Y
-            valorA = []
-            puntosA = [] #Coordenadas 'a' de la recta
-            puntosB = [] #Coordenadas 'b' de la recta
+            valorA = [] 
+            puntosA1 = []
+            puntosA2 = []
+            intersecciones = []
+            posiblesZ = []
             for lista in listaHileras:  #For para conseguir los valores de los campos generados dinámicamente
                 coeficientesX.append(int(lista[0].get()))
                 coeficientesY.append(int(lista[1].get()))
@@ -85,17 +88,47 @@ class VentanaResolver(Frame):
             
             for i in range(len(coeficientesX)): #For para hacer mapeo de coordenadas
                 if (coeficientesY[i] and coeficientesX[i]): #Comprobar que los valores no sean 0s
-                    tempX = coeficientesX[i]/valorA[i]
+                    tempX = valorA[i]/coeficientesX[i]
                     tempY = valorA[i]/coeficientesY[i]
-                    puntosA.append([0,tempY])
-                    puntosB.append([tempX,0])
+                    puntosA1.append(np.asarray([0,tempY]))
+                    puntosA2.append(np.asarray([tempX,0]))
+                    
                 else:#Woop, no funciona ahora
                     if(coeficientesY[i]):
-                        plt.axhline(y=(valorA[i]/coeficientesY[i]))
+
+                        tempY = valorA[i]/coeficientesY[i]
+                        puntosA2.append(np.asarray([0,tempY]))
+                        puntosA1.append(np.asarray([60,tempY]))
                     else:
-                        plt.axvline(x=(valorA[i]/coeficientesX[i]))
+                        tempX = valorA[i]/coeficientesX[i]
+                        puntosA1.append(np.asarray([tempX,10]))
+                        puntosA2.append(np.asarray([tempX,0]))
+            long = len(puntosA1)-1
             
+            for j in range(long):     #1
+                for k in range(long-j): #1 
+                    print(j+k+1)
+                    intersecciones.append(seg_intersect(puntosA2[j],puntosA1[j],puntosA2[k+j+1],puntosA1[j+k+1]))
+            print(intersecciones)
+
+            sol = ""
+            for stuff in intersecciones: #Calculo de Z
+                stuff.tolist()
+                X1 = entradaX1Z.get()
+                X2 = entradaX2Z.get()
+                tempZ = stuff[0]*int(X1)+stuff[1]*int(X2)
+                sol = sol + X1 + "(" + str(stuff[0])+")+" + X2 + "(" + str(stuff[1]) + ") = " + str(tempZ) + "\n"
+                posiblesZ.append(tempZ)
+            for ind,thing in enumerate(puntosA1):
+                plt.plot(puntosA2[ind],thing)
+            if varMaxMin.get() == "1": messagebox.showinfo("Solución",sol+"Z: "+str(max(posiblesZ)))
+            else: messagebox.showinfo("Solución",sol+"Z: "+str(min(posiblesZ)))
+
             plt.show()
+            
+           
+            
+
     #Etiquetas
         eX1 = Label(self, text = "X1")
         eX2 = Label(self, text = "X2")
